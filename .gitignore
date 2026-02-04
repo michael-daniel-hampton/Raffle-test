@@ -1,0 +1,9 @@
+node_modules
+.dist
+coverage
+apps/api/dist
+apps/api/node_modules
+apps/web/.next
+apps/web/node_modules
+packages/shared/node_modules
+.env
