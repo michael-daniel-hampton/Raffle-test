@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  CANCELLED
+}
+
+enum PurchaseStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model Listing {
+  id             String        @id @default(uuid())
+  sellerAliasId  String        @map("seller_alias_id")
+  title          String
+  description    String
+  category       String
+  ticketPrice    Int           @map("ticket_price")
+  currency       String        @default("EUR")
+  thresholdCount Int           @map("threshold_count")
+  endDate        DateTime?     @map("end_date")
+  status         ListingStatus @default(DRAFT)
+  ticketsSold    Int           @default(0) @map("tickets_sold")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  purchases      TicketPurchase[]
+  ranges         TicketRange[]
+  outcome        RaffleOutcome?
+
+  @@map("listings")
+}
+
+model TicketPurchase {
+  id             String         @id @default(uuid())
+  listingId      String         @map("listing_id")
+  buyerAliasId   String         @map("buyer_alias_id")
+  qty            Int
+  paymentRef     String?        @map("payment_ref")
+  idempotencyKey String?        @unique @map("idempotency_key")
+  status         PurchaseStatus @default(PENDING)
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  listing        Listing        @relation(fields: [listingId], references: [id])
+  ranges         TicketRange[]
+
+  @@map("ticket_purchases")
+}
+
+model TicketRange {
+  id          String   @id @default(uuid())
+  listingId   String   @map("listing_id")
+  purchaseId  String   @map("purchase_id")
+  startTicket Int      @map("start_ticket")
+  endTicket   Int      @map("end_ticket")
+
+  listing     Listing  @relation(fields: [listingId], references: [id])
+  purchase    TicketPurchase @relation(fields: [purchaseId], references: [id])
+
+  @@map("ticket_ranges")
+}
+
+model RaffleOutcome {
+  listingId     String   @id @map("listing_id")
+  winnerAliasId String   @map("winner_alias_id")
+  rngMethod     String   @map("rng_method")
+  rngSeedHash   String   @map("rng_seed_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  listing       Listing  @relation(fields: [listingId], references: [id])
+
+  @@map("raffle_outcomes")
+}
+
+model AuditEvent {
+  id           String   @id @default(uuid())
+  actorAliasId String?  @map("actor_alias_id")
+  action       String
+  targetType   String   @map("target_type")
+  targetId     String   @map("target_id")
+  metadata     Json
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("audit_events")
+}
