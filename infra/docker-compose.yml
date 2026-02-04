@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: raffle
       POSTGRES_DB: raffle
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -26,5 +26,26 @@ services:
     depends_on:
       - postgres
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
+
+  # pgAdmin service for browser-based Postgres management
+pgadmin:
+  image: dpage/pgadmin4
+  environment:
+    PGADMIN_DEFAULT_EMAIL: admin@local.dev
+    PGADMIN_DEFAULT_PASSWORD: admin
+  ports:
+    - "8080:80"
+  depends_on:
+    - postgres

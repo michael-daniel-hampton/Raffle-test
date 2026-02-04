@@ -10,5 +10,11 @@
     "dev:web": "pnpm --filter web dev",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "prisma": "^7.3.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.3.0"
   }
 }
